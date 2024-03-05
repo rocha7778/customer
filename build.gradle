@@ -1,13 +1,13 @@
-//plugins{
-//    id "org.sonarqube" version "4.3.1.3277"
-//}  se debe quitar si se quiere utilizar con el sonar viejito
+plugins{
+    id "org.sonarqube" version "4.3.1.3277"
+}  //se debe quitar si se quiere utilizar con el sonar viejito
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'application'
 
-    apply from: "$rootDir/gradle/sonar.gradle"
+    apply from: "$rootDir/gradle/sonar.nuevo.gradle"
 
     buildscript {
         repositories {
