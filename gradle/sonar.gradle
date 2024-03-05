@@ -1,0 +1,63 @@
+/*************************************************************************************************
+ ******************************* ADL DevOps Gradle Script ****************************************
+ * -----------------------------------------------------------------------------------------------
+ * ############################  Sonar Plugin Configuration #######################################
+ *
+ *  This file config Sonar plugin
+ *
+ * HOW TO RUN :
+ * ---------------------------------------------------
+ *  $ gradle sonarqube \
+ *   -Dsonar.projectKey=${projectKey} \
+ *   -Dsonar.organization=avaldigitallabsorganization \
+ *   -Dsonar.host.url=https://sonarcloud.io \
+ *   -Dsonar.login=${token} \
+ *   -Dsonar.java.pmd.reportPaths = "${project.buildDir}/reports/pmd/pmd.xml" \
+ *   -Dsonar.java.checkstyle.reportPaths = "${project.buildDir}/reports/checkstyle/checkstyle.xml" \
+ *   -Dsonar.java.spotbugs.reportPaths  = "${project.buildDir}/reports/spotbugs/spotbugsXml.xml"
+ *
+ * AUTHORS :
+ * ---------------------------------------------------
+ *   "Juan Sebastian Sanchez <juan.sanchez@avaldigitallabs.com>"
+ ************************************************************************************************/
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        //jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1")
+    }
+}
+
+apply plugin: org.sonarqube.gradle.SonarQubePlugin
+
+def jacocoPackageExclude = project.findProperty("jacoco.package.exclude") ? project.findProperty("jacoco.package.exclude") :
+    (project.findProperty("jacoco.package.excluide") ? project.findProperty("jacoco.package.excluide") : "")
+def sonarPackageExclusions = project.findProperty("sonar.package.exclusions") ? project.findProperty("sonar.package.exclusions") : ""
+
+sonarqube {
+    properties {
+        property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.coverage.exclusions", formatPackageExclusions(jacocoPackageExclude)
+        property "sonar.exclusions", formatPackageExclusions(sonarPackageExclusions)
+    }
+}
+
+private String formatPackageExclusions(def exclusions) {
+    def cleanedExclusions = exclusions.replaceAll("\\.", "/").split(',')
+
+    String formattedExclusions = ""
+    cleanedExclusions.each { name ->
+        formattedExclusions += "src/main/java/${name},"
+    }
+
+    return formattedExclusions
+}

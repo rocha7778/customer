@@ -1,0 +1,30 @@
+apply plugin: 'org.sonarqube'
+
+def jacocoSonarPackageExclude = project.findProperty("jacoco.package.exclude") ? project.findProperty("jacoco.package.exclude") :
+    (project.findProperty("jacoco.package.excluide") ? project.findProperty("jacoco.package.excluide") : "")
+def sonarPackageExclusions = project.findProperty("sonar.package.exclusions") ? project.findProperty("sonar.package.exclusions") : ""
+
+sonar{
+    properties {
+        property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.coverage.exclusions", formatPackageExclusions(jacocoSonarPackageExclude)
+        property "sonar.exclusions", formatPackageExclusions(sonarPackageExclusions)
+        property "sonar.projectKey", "$project.rootProject.name:$project.name"
+        property "sonar.host.url", System.getenv('SONAR_URL')
+        property "sonar.token", System.getenv('SONAR_TOKEN')
+    }
+    System.setProperty("sonar.projectName", "$project.rootProject.name:$project.name")
+}
+
+private static String formatPackageExclusions(def exclusions) {
+    def cleanedExclusions = exclusions.replaceAll(/(?:\.(?!class$)|^\\.)\//, "/").split(',')
+
+    String formattedExclusions = ""
+    cleanedExclusions.each { name ->
+        formattedExclusions += "src/main/java/${name},"
+    }
+
+    return formattedExclusions
+}
